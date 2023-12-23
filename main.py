@@ -1,16 +1,33 @@
-# This is a sample Python script.
+import selenium
+from selenium import webdriver as wb
+from selenium.webdriver.chrome.service import Service
+import pandas as pd
+import time
+from time import sleep
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+
+"""
+You need chromedriver for testing, here is the list of downloads for Chrome 
+version above 115: https://googlechromelabs.github.io/chrome-for-testing/
+And here is the list of downloads for 115 and older: 
+https://chromedriver.chromium.org/downloads
+Remember to put it in PATH executable or add it to you environmental paths
+I you don't know the version of your Chrome, type in you browser: chrome://version
+"""
+
+cd_path = r"C:\chromedriver-win64\chromedriver.exe"
+service = Service(cd_path)
+driver = wb.Chrome(service=service)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def run():
+    print("hello bot")
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    run()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
