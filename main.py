@@ -38,8 +38,22 @@ def login():
     driver.find_element(By.CSS_SELECTOR, "button").click()
 
 
+def define_search_parameters():
+    skillset = ['data', 'architect', 'python']
+    skillset = [_.strip().lower().replace(" ","-") for _ in skillset]
+
+    location = 'Warsaw'
+    location = location.strip().lower().replace(" ","-")
+
+    role = 'data analyst'
+    role = role.strip().lower().replace(" ","-")
+
+    return skillset, location, role
+
+
 def run():
     login()
+    skillset, location, role = define_search_parameters()
 
 
 if __name__ == '__main__':
