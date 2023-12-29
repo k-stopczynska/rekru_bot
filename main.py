@@ -71,7 +71,7 @@ def search_in_google(params):
          By.XPATH, '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
     # UWckNb
 
-    print([users.text for users in linkedin_users_urls_list])
+    print([users.get_attribute('href') for users in linkedin_users_urls_list])
 
 
 def run():
