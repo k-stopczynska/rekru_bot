@@ -3,7 +3,6 @@ from selenium import webdriver as wb
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 import pandas as pd
-import time
 from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -43,21 +42,30 @@ def login():
 
 def define_search_parameters():
     skillset = ['data', 'architect', 'python']
-    skillset = [_.strip().lower().replace(" ","-") for _ in skillset]
+    skillset = [_.strip().lower().replace(" ", "-") for _ in skillset]
 
     location = 'Warsaw'
     location = location.strip().lower().replace(" ", "-")
 
     role = 'data analyst'
-    role = role.strip().lower().replace(" ","-")
+    role = role.strip().lower().replace(" ", "-")
 
     return skillset, location, role
+
+
+def scroll_down():
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    sleep(3)
 
 
 def search_in_google(params):
     driver.get('https://www.google.com')
 
-    driver.find_element(By.ID, "L2AGLb").click()
+    try:
+        driver.find_element(By.ID, "L2AGLb").click()
+    except:
+        print("No cookie banner this time")
+        pass
 
     search_query = WebDriverWait(driver, 10).until(
         ec.visibility_of_element_located((By.NAME, 'q')))
@@ -67,18 +75,46 @@ def search_in_google(params):
     search_query.send_keys(Keys.ENTER)
     sleep(5)
 
-    linkedin_users_urls_list = driver.find_elements(
-         By.XPATH, '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
-    # UWckNb
+    pages_num = 3
 
-    print([users.get_attribute('href') for users in linkedin_users_urls_list])
+    for page in range(pages_num):
+
+        scroll_num = 5
+        for scroll in range(scroll_num):
+            try:
+                scroll_down()
+            except:
+                print("couldn't scroll down anymore, I will try to click load more results")
+                pass
+
+        linkedin_users_urls_list = driver.find_elements(
+            By.XPATH,
+            '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
+
+        print([user.get_attribute('href') for user in
+            linkedin_users_urls_list])
+
+        try:
+            next_button = driver.find_element(By.CLASS_NAME, 'kQdGHd')
+            next_button.click()
+            sleep(5)
+
+        except:
+            print("No next button on this page results")
+            break
+
+        linkedin_users_urls_list = driver.find_elements(
+            By.XPATH,
+            '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
+
+        print([user.get_attribute('href') for user in
+               linkedin_users_urls_list])
 
 
 def run():
     # login()
     # skillset, location, role = define_search_parameters()
     search_in_google('sth')
-
 
 
 if __name__ == '__main__':
