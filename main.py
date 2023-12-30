@@ -1,8 +1,6 @@
-import selenium
 from selenium import webdriver as wb
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
-import pandas as pd
 from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -10,6 +8,11 @@ from selenium.webdriver.support import expected_conditions as ec
 from dotenv import load_dotenv
 import os
 
+"""
+This is loading environmental variables for loading credentials to LI.
+In root directory create .env file with two variables named: LINKEDIN_LOGIN and
+LINKEDIN_PASSWORD, and pass your LI credentials as strings.
+"""
 
 load_dotenv()
 
@@ -30,6 +33,12 @@ driver = wb.Chrome(service=service)
 
 
 def login():
+
+    """
+    login function will go to LI login page and pass your credentials from
+    .env file
+    """
+
     driver.get("https://www.linkedin.com/home")
     sleep(5)
     driver.find_element(By.ID, "session_key").send_keys(
@@ -41,6 +50,16 @@ def login():
 
 
 def define_search_parameters():
+
+    """
+    define_search_parameters function is a place where you can pass skillset,
+    location and current role for your search
+    :return:
+    skillset(List(str)): skills keywords
+    location(str): location of a candidate according to LI
+    role(str): the role of a candidate
+    """
+
     skillset = ['data', 'architect', 'python']
     skillset = [_.strip().lower().replace(" ", "-") for _ in skillset]
 
@@ -54,53 +73,69 @@ def define_search_parameters():
 
 
 def scroll_down():
+
+    """
+    scroll_down function executes javascript script for scrolling down on pages
+    that are using lazy loading, and waits for results before next scroll
+    for 3 seconds
+    """
+
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     sleep(3)
 
 
 def search_in_google(params):
+
+    """
+    search_in_google function will open google tab, take your search params,
+    and type it in, waits for results, scroll down or change the page if
+    possible for how many times you want
+    :param params: (List(str))list of strings representing skills, role,
+    and desired location of candidate
+    :print: prints out a list of linked in links to profiles of candidates
+    :return: //TODO: make it return complete list so it can be scrapped and put
+    into csv
+    """
+
     driver.get('https://www.google.com')
 
     try:
         driver.find_element(By.ID, "L2AGLb").click()
-    except:
-        print("No cookie banner this time")
+    except Exception as e:
+        print("No cookie banner this time", e)
         pass
 
     search_query = WebDriverWait(driver, 10).until(
         ec.visibility_of_element_located((By.NAME, 'q')))
 
-    search_query.send_keys('site:linkedin.com/in/ AND "data" AND "architect"')
+    query_string = " AND ".join(params)
+
+    search_query.send_keys(f'site:linkedin.com/in/ {query_string}')
 
     search_query.send_keys(Keys.ENTER)
     sleep(5)
 
-    pages_num = 3
+    pages_num = 2
 
     for page in range(pages_num):
+        scroll_num = 6
 
-        scroll_num = 5
         for scroll in range(scroll_num):
             try:
                 scroll_down()
-            except:
-                print("couldn't scroll down anymore, I will try to click load more results")
+
+            except Exception as e:
+                print("couldn't scroll down anymore, I will try to click load "
+                      "more results", e)
                 pass
-
-        linkedin_users_urls_list = driver.find_elements(
-            By.XPATH,
-            '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
-
-        print([user.get_attribute('href') for user in
-            linkedin_users_urls_list])
 
         try:
             next_button = driver.find_element(By.CLASS_NAME, 'kQdGHd')
             next_button.click()
             sleep(5)
 
-        except:
-            print("No next button on this page results")
+        except Exception as e:
+            print("No next button on this page", e)
             break
 
         linkedin_users_urls_list = driver.find_elements(
@@ -112,9 +147,15 @@ def search_in_google(params):
 
 
 def run():
+
+    """
+    run function is script executable that performs all scripts in order
+    """
+
     # login()
-    # skillset, location, role = define_search_parameters()
-    search_in_google('sth')
+    skillset, location, role = define_search_parameters()
+    google_params = skillset + [role, location]
+    search_in_google(google_params)
 
 
 if __name__ == '__main__':
