@@ -30,6 +30,8 @@ type in you browser: chrome://version
 cd_path = r"C:\chromedriver-win64\chromedriver.exe"
 service = Service(cd_path)
 driver = wb.Chrome(service=service)
+chrome_options = wb.ChromeOptions()
+chrome_options.add_argument("--headless")
 
 
 def login():
