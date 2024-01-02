@@ -93,8 +93,7 @@ def search_in_google(params):
     :param params: (List(str))list of strings representing skills, role,
     and desired location of candidate
     :print: prints out a list of linked in links to profiles of candidates
-    :return: //TODO: make it return complete list so it can be scrapped and put
-    into csv
+    :return: a list of linked in links to profiles of candidates
     """
 
     driver.get('https://www.google.com')
@@ -115,7 +114,7 @@ def search_in_google(params):
     search_query.send_keys(Keys.ENTER)
     sleep(5)
 
-    pages_num = 2
+    pages_num = 1
 
     for page in range(pages_num):
         scroll_num = 6
@@ -136,14 +135,25 @@ def search_in_google(params):
 
         except Exception as e:
             print("No next button on this page", e)
-            break
 
         linkedin_users_urls_list = driver.find_elements(
             By.XPATH,
             '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
 
-        print([user.get_attribute('href') for user in
-               linkedin_users_urls_list])
+        print(len([user.get_attribute('href') for user in
+               linkedin_users_urls_list]))
+
+        return [user.get_attribute('href') for user in
+               linkedin_users_urls_list]
+
+
+def scrap_users_links(links):
+    for link in links:
+        driver.get(link)
+        login()
+        sleep(1)
+
+    driver.close()
 
 
 def run():
@@ -152,10 +162,10 @@ def run():
     run function is script executable that performs all scripts in order
     """
 
-    # login()
     skillset, location, role = define_search_parameters()
     google_params = skillset + [role, location]
-    search_in_google(google_params)
+    links = search_in_google(google_params)
+    scrap_users_links(links)
 
 
 if __name__ == '__main__':
