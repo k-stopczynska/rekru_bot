@@ -1,10 +1,10 @@
 from selenium import webdriver as wb
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
-from time import sleep
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
+from time import sleep
 from dotenv import load_dotenv
 import os
 
@@ -86,25 +86,30 @@ def scroll_down():
     sleep(3)
 
 
-def search_in_google(params):
+def dispose_cookie_banner():
 
     """
-    search_in_google function will open google tab, take your search params,
-    and type it in, waits for results, scroll down or change the page if
-    possible for how many times you want
-    :param params: (List(str))list of strings representing skills, role,
-    and desired location of candidate
-    :print: prints out a list of linked in links to profiles of candidates
-    :return: a list of linked in links to profiles of candidates
+    dispose_cookie_banner function searches for a button to consent to all
+    cookies and clicks it
+    :excepts: any errors raised if no button with this ID is found, and prints
+    message to inform user
     """
-
-    driver.get('https://www.google.com')
 
     try:
         driver.find_element(By.ID, "L2AGLb").click()
     except Exception as e:
         print("No cookie banner this time", e)
         pass
+
+
+def pass_query_params(params):
+
+    """
+    pass_query_params function is looking for an input field to pass params as
+    a boolean string and starts searching process by clicking enter key
+    :param params: (List(str))list of strings representing skills, role,
+    and desired location of candidate
+    """
 
     search_query = WebDriverWait(driver, 10).until(
         ec.visibility_of_element_located((By.NAME, 'q')))
@@ -115,6 +120,16 @@ def search_in_google(params):
 
     search_query.send_keys(Keys.ENTER)
     sleep(5)
+
+
+def change_page():
+
+    """
+    change_page function is calling scroll down function for lazy loaded results,
+    and changes page pages_num times if "next button" is found
+    :excepts: any Exception raised if page couldn't be scrolled further or next
+    button is not found
+    """
 
     pages_num = 1
 
@@ -138,15 +153,42 @@ def search_in_google(params):
         except Exception as e:
             print("No next button on this page", e)
 
-        linkedin_users_urls_list = driver.find_elements(
-            By.XPATH,
-            '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
 
-        print(len([user.get_attribute('href') for user in
-               linkedin_users_urls_list]))
+def scrape_google_results():
 
-        return [user.get_attribute('href') for user in
-               linkedin_users_urls_list]
+    """
+    scrape_google_results function finds links to candidates' profiles aligned
+    with search params, and returns them as a List
+    :return: List(str) users' links list
+    """
+
+    linkedin_users_urls_list = driver.find_elements(
+        By.XPATH,
+        '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
+
+    return [user.get_attribute('href') for user in linkedin_users_urls_list]
+
+
+def search_in_google(params):
+
+    """
+    search_in_google function will open google tab, take search params,
+    and type it in, waits for results, scroll down or change the page if
+    possible for as many times as specified in change_page fn
+    :param params: (List(str))list of strings representing skills, role,
+    and desired location of candidate
+    :return: a list of linked in links to profiles of candidates
+    """
+
+    driver.get('https://www.google.com')
+
+    dispose_cookie_banner()
+
+    pass_query_params(params)
+
+    change_page()
+
+    return scrape_google_results()
 
 
 def scrap_users_links(links):
