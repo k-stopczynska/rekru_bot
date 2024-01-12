@@ -1,20 +1,11 @@
 from selenium import webdriver as wb
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from time import sleep
-from dotenv import load_dotenv
-import os
-
-"""
-This is loading environmental variables for loading credentials to LI.
-In root directory create .env file with two variables named: LINKEDIN_LOGIN and
-LINKEDIN_PASSWORD, and pass your LI credentials as strings.
-"""
-
-load_dotenv()
 
 
 """
@@ -29,26 +20,10 @@ type in you browser: chrome://version
 
 cd_path = r"C:\chromedriver-win64\chromedriver.exe"
 service = Service(cd_path)
-driver = wb.Chrome(service=service)
-chrome_options = wb.ChromeOptions()
-chrome_options.add_argument("--headless")
-
-
-def login():
-
-    """
-    login function will go to LI login page and pass your credentials from
-    .env file
-    """
-
-    driver.get("https://www.linkedin.com/home")
-    sleep(5)
-    driver.find_element(By.ID, "session_key").send_keys(
-        os.getenv('LINKEDIN_LOGIN'))
-    driver.find_element(By.ID, "session_password").send_keys(
-        os.getenv('LINKEDIN_PASSWORD'))
-    sleep(5)
-    driver.find_element(By.CSS_SELECTOR, "button").click()
+options = Options()
+options.add_argument("--disable-redirects")
+# options.add_argument("--headless")
+driver = wb.Chrome(service=service, options=options)
 
 
 def define_search_parameters():
@@ -62,13 +37,13 @@ def define_search_parameters():
     role(str): the role of a candidate
     """
 
-    skillset = ['data', 'architect', 'python']
+    skillset = ['fintech', 'architect', 'python']
     skillset = [_.strip().lower().replace(" ", "-") for _ in skillset]
 
-    location = 'Warsaw'
+    location = 'Cracow'
     location = location.strip().lower().replace(" ", "-")
 
-    role = 'data analyst'
+    role = 'developer'
     role = role.strip().lower().replace(" ", "-")
 
     return skillset, location, role
@@ -134,7 +109,7 @@ def change_page():
     pages_num = 1
 
     for page in range(pages_num):
-        scroll_num = 6
+        scroll_num = 10
 
         for scroll in range(scroll_num):
             try:
@@ -162,11 +137,21 @@ def scrape_google_results():
     :return: List(str) users' links list
     """
 
-    linkedin_users_urls_list = driver.find_elements(
+    linkedin_users_urls = driver.find_elements(
         By.XPATH,
         '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
 
-    return [user.get_attribute('href') for user in linkedin_users_urls_list]
+    parsed_urls = [user.get_attribute('href') for user in linkedin_users_urls]
+
+    linkedin_users_names = driver.find_elements(By.XPATH,
+        '//div[@class="MjjYud"]/div/div/div/div/div/span/a/h3')
+
+    parsed_names = [[name.text.split(' ')[0], name.text.split(' ')[1]] for name in linkedin_users_names]
+
+    users_data = zip(parsed_names, parsed_urls)
+    print(users_data)
+
+    # return [[user.text.split(' ')[1], user.text.split(' ')[1], user.get_attribute('href')] for user in users_data]
 
 
 def search_in_google(params):
@@ -191,15 +176,6 @@ def search_in_google(params):
     return scrape_google_results()
 
 
-def scrap_users_links(links):
-    for link in links:
-        driver.get(link)
-        login()
-        sleep(1)
-
-    driver.close()
-
-
 def run():
 
     """
@@ -209,7 +185,6 @@ def run():
     skillset, location, role = define_search_parameters()
     google_params = skillset + [role, location]
     links = search_in_google(google_params)
-    scrap_users_links(links)
 
 
 if __name__ == '__main__':
