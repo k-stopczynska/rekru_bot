@@ -28,10 +28,22 @@ class TestRecruitmentBot(TestCase):
 	@patch('time.sleep', return_value=None)
 	@patch('selenium.webdriver.remote.webdriver.WebDriver.find_element')
 	def test_change_page_success(self, mock_find_elem, mock_sleep):
-		button = mock_find_elem(By.CLASS_NAME, 'kQdGHd')
-		button.click = MagicMock()
+		mock_find_elem(By.CLASS_NAME, 'kQdGHd')
+		button = MagicMock()
+		mock_find_elem.return_value = button
+		button.click()
 		mock_sleep(5)
 
 		mock_find_elem.assert_called_with(By.CLASS_NAME, 'kQdGHd')
+		button.click.assert_called_once()
 		mock_sleep.assert_called_once_with(5)
+
+	@patch('selenium.webdriver.remote.webdriver.WebDriver.find_element')
+	def test_dispose_cookie_banner_success(self, mock_find_elem):
+		button = MagicMock()
+		mock_find_elem.return_value = button
+		button.click()
+
+		button.click.assert_called_once()
+
 
