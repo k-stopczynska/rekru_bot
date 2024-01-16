@@ -61,5 +61,22 @@ class TestRecruitmentBot(TestCase):
 			f'site:linkedin.com/in/ typescript AND react AND 3D AND warsaw '
 			f'AND developer')
 
+	@patch('selenium.webdriver.remote.webdriver.WebDriver.find_elements')
+	def test_scrape_google_results(self, mock_find_elems):
+		mock_find_elems(
+			By.XPATH, '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
+
+		mock_find_elems.assert_called_with(
+			By.XPATH, '//div[@class="MjjYud"]/div/div/div/div/div/span/a[@href]')
+
+		mock_find_elems(
+			By.XPATH, '//div[@class="MjjYud"]/div/div/div/div/div/span/a/h3')
+
+		mock_find_elems.assert_called_with(
+			By.XPATH, '//div[@class="MjjYud"]/div/div/div/div/div/span/a/h3')
+
+
+
+
 
 
