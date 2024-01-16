@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock
 import selenium.webdriver.chrome.webdriver
 from web_scraping import *
+from linkedin_search import *
 
 
 class TestRecruitmentBot(TestCase):
@@ -45,5 +46,20 @@ class TestRecruitmentBot(TestCase):
 		button.click()
 
 		button.click.assert_called_once()
+
+	@patch('selenium.webdriver.support.wait.WebDriverWait.until')
+	def test_pass_query_params(self, mock_wait):
+		params = ['typescript', 'react', '3D', 'warsaw', 'developer']
+		mock_wait(ec.visibility_of_element_located((By.NAME, 'q')))
+		search_query = MagicMock()
+		mock_wait.return_value = search_query
+		query_string = " AND ".join(params)
+		search_query.send_keys(f'site:linkedin.com/in/ {query_string}')
+
+		mock_wait.assert_called_once()
+		search_query.send_keys.assert_called_with(
+			f'site:linkedin.com/in/ typescript AND react AND 3D AND warsaw '
+			f'AND developer')
+
 
 
