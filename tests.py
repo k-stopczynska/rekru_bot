@@ -1,8 +1,9 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 import selenium.webdriver.chrome.webdriver
-from web_scraping import *
+from io import StringIO
 from linkedin_search import *
+from main import *
 
 
 class TestRecruitmentBot(TestCase):
@@ -74,6 +75,35 @@ class TestRecruitmentBot(TestCase):
 
 		mock_find_elems.assert_called_with(
 			By.XPATH, '//div[@class="MjjYud"]/div/div/div/div/div/span/a/h3')
+
+	def test_define_search_parameters(self):
+		skillset = ['Typescript', 'React', '3D']
+		skillset = [_.strip().lower().replace(" ", "-") for _ in
+					skillset]
+		location = 'Biała Podlaska'
+		location = location.strip().lower().replace(" ", "-")
+		role = 'Data Analyst'
+		role = role.strip().lower().replace(" ", "-")
+
+		self.assertEqual(skillset, ['typescript', 'react', '3d'])
+		self.assertEqual(location, 'biała-podlaska')
+		self.assertEqual(role, 'data-analyst')
+
+	@patch('sys.stdout', new_callable=StringIO)
+	def test_save_to_csv(self, mock_stdout):
+		data = [
+			(('name1', 'last_name1'), 'link1'),
+			(('name2', 'last_name2'), 'link2'),
+			(('name3', 'last_name3'), 'link3')]
+		csv_filename = 'test.csv'
+
+		save_to_csv(data, csv_filename)
+
+		printed_output = mock_stdout.getvalue().strip()
+
+		# Assert that the expected message is in the printed output
+		expected_message = f'Data has been written to {csv_filename}'
+		self.assertIn(expected_message, printed_output)
 
 
 

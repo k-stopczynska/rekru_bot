@@ -63,7 +63,6 @@ def search_in_google(params, driver):
     :param params: (List(str))list of strings representing skills, role,
     and desired location of candidate
     :param driver: webdriver instance
-    :return: a list of linked in links to profiles of candidates
     """
 
     driver.get('https://www.google.com')
